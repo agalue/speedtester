@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+
+  speedtester:
+    build: .
+    container_name: speedtester
+    hostname: speedtester
+    image: agalue/speedtester
+    command:
+    - --server=${SERVER_ID:-0}
+    ports:
+    - 8080:8080
+    environment:
+      TZ: America/New_York
+ 
+  prometheus:
+    container_name: prometheus
+    hostname: prometheus
+    image: prom/prometheus
+    ports:
+    - 9090:9090
+    volumes:
+    - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    - ./data_prometheus/:/prometheus
+    environment:
+      TZ: America/New_York
+
+  grafana:
+    container_name: grafana
+    hostname: grafana
+    image: grafana/grafana
+    ports:
+    - 3000:3000
+    volumes:
+    - ./grafana/:/etc/grafana/provisioning/
+    - ./data_grafana/:/var/lib/grafana
+    environment:
+    - GF_SECURITY_ADMIN_PASSWORD=admin
