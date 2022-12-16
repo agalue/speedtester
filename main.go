@@ -62,7 +62,32 @@ type Stats struct {
 	ISP        string          `json:"isp"`
 }
 
+func (s *Stats) HasError() error {
+	if s.Server == nil {
+		return fmt.Errorf("missing server details")
+	}
+	if s.Ping == nil {
+		return fmt.Errorf("missing ping details")
+	}
+	if s.Download == nil {
+		return fmt.Errorf("missing download details")
+	}
+	if s.Download.Latency == nil {
+		return fmt.Errorf("missing download latency details")
+	}
+	if s.Upload == nil {
+		return fmt.Errorf("missing upload details")
+	}
+	if s.Upload.Latency == nil {
+		return fmt.Errorf("missing upload latency details")
+	}
+	return nil
+}
+
 func (s *Stats) Log() {
+	if s.HasError() != nil {
+		return
+	}
 	log.Printf("Server %d: %s (ISP: %s)", s.Server.ID, s.Server.Name, s.ISP)
 	log.Printf("Download %.2f Mbps (latency: %.2f/%.2f ms, jitter: %.2f ms)", s.Download.GetBandWithInMbps(), s.Download.Latency.IQM, s.Download.Latency.High, s.Download.Latency.Jitter)
 	log.Printf("Upload %.2f Mbps (latency: %.2f/%.2f ms, jitter: %.2f ms)", s.Upload.GetBandWithInMbps(), s.Upload.Latency.IQM, s.Upload.Latency.High, s.Upload.Latency.Jitter)
@@ -143,6 +168,10 @@ func (s *PrometheusStats) Init() {
 }
 
 func (s *PrometheusStats) Update(stats *Stats) {
+	if stats.HasError() != nil {
+		return
+	}
+
 	c := stats.Server
 
 	s.DownloadBandwidth.WithLabelValues(stats.ISP, c.GetID(), c.Name, c.Location).Set(stats.Download.GetBandWithInMbps())
@@ -198,20 +227,21 @@ func (t *SpeedTester) Run() error {
 	out := new(bytes.Buffer)
 	cmd.Stdout = out
 
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return err
 	}
 
 	stats := new(Stats)
-	err = json.Unmarshal(out.Bytes(), stats)
-	if err != nil {
+	if err := json.Unmarshal(out.Bytes(), stats); err != nil {
 		return err
 	}
 
 	stats.Log()
 	elapsed := time.Since(start)
 	log.Printf("Finished in %s", elapsed.String())
+	if err := stats.HasError(); err != nil {
+		return err
+	}
 	t.promStats.Update(stats)
 	status = "ok"
 	return nil

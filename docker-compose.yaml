@@ -13,7 +13,8 @@ services:
     - 8080:8080
     environment:
       TZ: America/New_York
- 
+    restart: on-failure
+
   prometheus:
     container_name: prometheus
     hostname: prometheus
@@ -25,6 +26,7 @@ services:
     - ./data_prometheus/:/prometheus
     environment:
       TZ: America/New_York
+    restart: on-failure
 
   grafana:
     container_name: grafana
@@ -37,3 +39,4 @@ services:
     - ./data_grafana/:/var/lib/grafana
     environment:
     - GF_SECURITY_ADMIN_PASSWORD=admin
+    restart: on-failure
