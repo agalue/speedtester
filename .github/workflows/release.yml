@@ -5,6 +5,9 @@ name: Build and Release
 
 on:
   workflow_dispatch: {} # For testing purposes
+  push:
+    branches:
+    - main
   pull_request:
     types:
     - closed
