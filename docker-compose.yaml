@@ -6,7 +6,7 @@ services:
     build: .
     container_name: speedtester
     hostname: speedtester
-    image: agalue/speedtester
+    image: agalue/speedtester:main
     command:
     - --server=${SERVER_ID:-0}
     ports:

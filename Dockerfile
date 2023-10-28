@@ -1,11 +1,11 @@
-FROM golang:1.19 AS builder
+FROM golang:1.21-bookworm AS builder
 
 WORKDIR /app
 COPY go.mod go.sum main.go ./
 RUN go mod download
 RUN GOOS=linux go build -o speedtester .
 
-FROM debian:11
+FROM debian:bookworm
 RUN apt update && \
   apt install wget -y && \
   wget -q -O /tmp/setup.sh https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh && \
