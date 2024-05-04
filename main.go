@@ -58,7 +58,7 @@ type Stats struct {
 	Ping       *PingStats      `json:"ping"`
 	Download   *BandwidthStats `json:"download"`
 	Upload     *BandwidthStats `json:"upload"`
-	PacketLoss int             `json:"packetLoss"`
+	PacketLoss float64         `json:"packetLoss"`
 	ISP        string          `json:"isp"`
 }
 
@@ -191,7 +191,7 @@ func (s *PrometheusStats) Update(stats *Stats) {
 	s.PingLatency.WithLabelValues(stats.ISP, c.GetID(), c.Name, c.Location, "high").Set(stats.Ping.High)
 	s.PingJitter.WithLabelValues(stats.ISP, c.GetID(), c.Name, c.Location).Set(stats.Ping.Jitter)
 
-	s.PacketLoss.WithLabelValues(stats.ISP, c.GetID(), c.Name, c.Location).Set(float64(stats.PacketLoss))
+	s.PacketLoss.WithLabelValues(stats.ISP, c.GetID(), c.Name, c.Location).Set(stats.PacketLoss)
 }
 
 type SpeedTester struct {
@@ -274,7 +274,7 @@ func main() {
 		}
 	}()
 
-	go func(runner *SpeedTester) {
+	go func() {
 		log.Printf("Statistics will be collected and processed every %s", updateFrequency.String())
 		err := runner.Run()
 		if err != nil {
@@ -292,7 +292,7 @@ func main() {
 				}
 			}
 		}
-	}(runner)
+	}()
 
 	<-signalChan
 	cancel()
