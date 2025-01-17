@@ -268,26 +268,24 @@ func main() {
 	go func() {
 		log.Printf("Starting Prometheus Metrics server on port %d", prometheusPort)
 		http.Handle("/", promhttp.Handler())
-		err := http.ListenAndServe(fmt.Sprintf(":%d", prometheusPort), nil)
-		if err != nil {
+		if err := http.ListenAndServe(fmt.Sprintf(":%d", prometheusPort), nil); err != nil {
 			log.Fatalf("Cannot start prometheus HTTP server: %v", err)
 		}
 	}()
 
 	go func() {
 		log.Printf("Statistics will be collected and processed every %s", updateFrequency.String())
-		err := runner.Run()
-		if err != nil {
-			log.Printf("cannot execute command: %v", err)
+		if err := runner.Run(); err != nil {
+			log.Printf("cannot execute command: %s", err)
 		}
 		ticker := time.NewTicker(updateFrequency)
 		for {
 			select {
 			case <-ctx.Done():
 				ticker.Stop()
+				return
 			case <-ticker.C:
-				err := runner.Run()
-				if err != nil {
+				if err := runner.Run(); err != nil {
 					log.Printf("cannot execute command: %v", err)
 				}
 			}
