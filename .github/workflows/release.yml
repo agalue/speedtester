@@ -32,7 +32,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: 1.22
+        go-version: '1.23'
 
     - name: Build Go Code
       run: go build -v -o speedtester
@@ -59,7 +59,7 @@ jobs:
           type=sha
 
     - name: Build and Push
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: .
         platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
